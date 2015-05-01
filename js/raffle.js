@@ -7,6 +7,7 @@
 
 var inProgress = false;
 var size = 60;
+var ticketTotal = 0;
 function map(a, f){
 	for(var i=0; i<a.length; i++){
 		f(a[i], i);
@@ -79,10 +80,14 @@ function elementInViewport(el) {
 
 function Ticket(name, points){
 	this.name = name;
-	if(typeof(points) == "number")
+	if(typeof(points) == "number"){
 		this.points = points;
-	else
+		ticketTotal = ticketTotal + points;
+	}
+	else{
 		this.points = 1;
+		ticketTotal = ticketTotal + 1;
+	}
 	this.dom = $("<div class='ticket'>").text(name);
 	this.fixPosition = function(){
 		var me = this;
@@ -102,6 +107,7 @@ function Ticket(name, points){
 				callback();
 			});
 			$('#participant-number').text(length - 1 + '/' + tickets.length);
+			$('#ticket-number').text(ticketTotal);
 		}
 		else{
 			this.dom.css({
@@ -129,6 +135,7 @@ var removeDuplicateNames = function(data){
 
 var makeTicketsWithPoints = function(){
 	tickets = [];
+	ticketTotal = 0;
 	$('.ticket').remove();
 	map(removeDuplicateNames(imported), function(tdata){
 		var t = new Ticket(tdata.name, tdata.points);
@@ -145,6 +152,7 @@ var makeTicketsWithPoints = function(){
 	}
 
 	$('#participant-number').css('width', '').text(tickets.length);
+	$('#ticket-number').text(ticketTotal);
 	setTimeout(function() {
 		map(tickets, function(ticket){
 			ticket.fixPosition();
@@ -180,6 +188,8 @@ var pickName = function(){
 	var choices = getChoices();
 	if(choices.length > 1){
 		var remove = Math.floor(Math.random()*choices.length);
+		ticketTotal--;
+		$('#ticket-number').text(ticketTotal);
 		choices[remove].decrement(choices.length, function(){
 			pickName();
 		});
@@ -198,7 +208,7 @@ var pickName = function(){
 				makeTicketsWithPoints(ticketNames, ticketPoints);
 			}, 700);
 		});
-		choices.animate({'font-size':3*size +'px','top':(window.innerHeight/5) + 'px','left':(window.innerWidth/2 - width) + 'px'},1500, function(){
+		choices.animate({'font-size':3*size +'px','top':(window.innerHeight/5) + 'px','left':(window.innerWidth/2 - width) + 'px'},0, function(){
 			choices.animate({'left':(window.innerWidth/2 - choices.width()/2) + 'px'}, 'slow');
 		});
 	}
